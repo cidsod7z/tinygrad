@@ -24,8 +24,9 @@ from tinygrad.tensor import Tensor
 from tinygrad.helpers import DEBUG, getenv
 from tinygrad.engine.realize import CompiledRunner
 
-# Mostrar dispositivos disponibles
-print(list(Device.get_available_devices()))
+# Mostrar dispositivos disponibles solo si se ejecuta directamente
+if __name__ == "__main__":
+    print(list(Device.get_available_devices()))
 
 # Establecer variables de entorno si no están definidas
 os.environ.setdefault("JIT", "2")
@@ -41,23 +42,19 @@ os.environ.setdefault("PREREALIZE", "0")
 # os.environ.setdefault("PROFILE", "1")
 # os.environ.setdefault("JIT_BATCH_SIZE", "0")
 
-# Crear el parser
-parser = argparse.ArgumentParser(description="Descargar modelo y dataset")
-# Agregar argumentos
-parser.add_argument("--url_model", type=str, default="https://github.com/covenant-org/tinygrad/releases/download/yoloV8-Medium-NucleaV9/best.onnx", help="URL del modelo ONNX")
-parser.add_argument("--url_dataset", type=str, default="https://app.roboflow.com/ds/qnXOxt8VKv?key=1mmF2G81LD", help="URL del dataset")
-parser.add_argument("--model_path_pkl", type=str, default="", help="Direccion del pkl")
-parser.add_argument("--imshow", type=str, default="True", help="Mostrar imágenes a tiempo real")
-parser.add_argument("--device", type=str, default="", help="Mostrar imágenes a tiempo real")
-args = parser.parse_args()
-
-args.imshow = args.imshow.lower() in ["true", "1", "yes"]
-if args.device:
-    Device.DEFAULT = args.device
-
-# Usar los valores en el código
-print(f"URL del modelo: {args.url_model}")
-print(f"URL del dataset: {args.url_dataset}")
+# Argument parser solo si se ejecuta directamente
+def get_args():
+    parser = argparse.ArgumentParser(description="Descargar modelo y dataset")
+    parser.add_argument("--url_model", type=str, default="https://github.com/covenant-org/tinygrad/releases/download/yoloV8-Medium-NucleaV9/best.onnx", help="URL del modelo ONNX")
+    parser.add_argument("--url_dataset", type=str, default="https://app.roboflow.com/ds/qnXOxt8VKv?key=1mmF2G81LD", help="URL del dataset")
+    parser.add_argument("--model_path_pkl", type=str, default="", help="Direccion del pkl")
+    parser.add_argument("--imshow", type=str, default="True", help="Mostrar imágenes a tiempo real")
+    parser.add_argument("--device", type=str, default="", help="Dispositivo tinygrad")
+    args = parser.parse_args()
+    args.imshow = args.imshow.lower() in ["true", "1", "yes"]
+    if args.device:
+        Device.DEFAULT = args.device
+    return args
 
 debug = False
 
@@ -119,7 +116,6 @@ class ModelDownloader:
         
     def get_yaml_data(self):
         self.yaml_path = self.gt_path / Path("data.yaml")
-        # Cargar clases desde el archivo YAML
         with self.yaml_path.open("r") as f:
             data = yaml.safe_load(f)
         self.classes = data.get("names", [])
@@ -350,6 +346,7 @@ class ModelProcessor:
 
 def main():
     os.chdir("/tmp")
+    args = get_args()
     model_files = ModelDownloader(args.url_model, args.url_dataset)
     model_files.download_model()
     model_files.download_dataset()
