@@ -268,7 +268,11 @@ class DetectionHead:
     c1 = max(filters[0], self.nc)
     c2 = max((filters[0] // 4, self.ch * 4))
     self.dfl = DFL(self.ch)
+    print(f"{filters=} {c1=} {c2=}")
     self.cv3 = [[Conv_Block(x, c1, 3), Conv_Block(c1, c1, 3), Conv2d(c1, self.nc, 1)] for x in filters]
+#    self.cv3[0][0] = Conv_Block(64, 80, 3)
+#    self.cv3[0][1] = Conv_Block(80, 80, 3)
+#    self.cv3[0][2] = Conv2d(80, 80, 1)
     self.cv2 = [[Conv_Block(x, c2, 3), Conv_Block(c2, c2, 3), Conv2d(c2, 4 * self.ch, 1)] for x in filters]
 
   def __call__(self, x):
@@ -351,7 +355,7 @@ def postprocess(output, max_det=300, conf_threshold=0.25, iou_threshold=0.45):
 
 def get_weights_location(yolo_variant: str) -> Path:
   weights_location = Path(__file__).parents[1] / "weights" / f'yolov8{yolo_variant}.safetensors'
-  fetch(f'https://gitlab.com/r3sist/yolov8_weights/-/raw/master/yolov8{yolo_variant}.safetensors', weights_location)
+#  fetch(f'https://gitlab.com/r3sist/yolov8_weights/-/raw/master/yolov8{yolo_variant}.safetensors', weights_location)
   f32_weights = weights_location.with_name(f"{weights_location.stem}_f32.safetensors")
   if not f32_weights.exists(): convert_f16_safetensor_to_f32(weights_location, f32_weights)
   return f32_weights
